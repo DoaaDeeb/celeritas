@@ -29,7 +29,7 @@ namespace
 /*!
  * Interact using the Seltzer-Berger model on applicable tracks.
  */
-__global__ void seltzer_berger_interact_kernel(const SeltzerBergerPointers bh,
+__global__ void seltzer_berger_interact_kernel(const SeltzerBergerPointers sb,
                                                const ModelInteractPointers ptrs)
 {
     auto tid = celeritas::KernelParamCalculator::thread_id();
@@ -52,13 +52,13 @@ __global__ void seltzer_berger_interact_kernel(const SeltzerBergerPointers bh,
                              tid);
 
     // This interaction only applies if the Seltzer-Berger model was selected
-    if (physics.model_id() != bh.model_id)
+    if (physics.model_id() != sb.model_id)
         return;
 
     // Assume only a single element in the material, for now
     CELER_ASSERT(material_view.num_elements() == 1);
     SeltzerBergerInteractor interact(
-        bh,
+        sb,
         particle,
         ptrs.states.direction[tid.get()],
         allocate_secondaries,
@@ -77,17 +77,17 @@ __global__ void seltzer_berger_interact_kernel(const SeltzerBergerPointers bh,
 /*!
  * Launch the Seltzer-Berger interaction.
  */
-void seltzer_berger_interact(const SeltzerBergerPointers& bh,
+void seltzer_berger_interact(const SeltzerBergerPointers& sb,
                              const ModelInteractPointers& model)
 {
-    CELER_EXPECT(bh);
+    CELER_EXPECT(sb);
     CELER_EXPECT(model);
 
     static const KernelParamCalculator calc_kernel_params(
         seltzer_berger_interact_kernel, "seltzer_berger_interact");
     auto params = calc_kernel_params(model.states.size());
     seltzer_berger_interact_kernel<<<params.grid_size, params.block_size>>>(
-        bh, model);
+        sb, model);
     CELER_CUDA_CHECK_ERROR();
 }
 

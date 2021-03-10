@@ -30,7 +30,7 @@ namespace detail
  * The Seltzer-Berger model implements cross sections based on interpolation
  * of pre-calculated tables.
  *
- * \note This interactor performs the sampling routine from the Geant4
+ * \note This interactor performs the sampling routines from the Geant4
  * G4SeltzerBergerModel, documented in section 10.2.1 of the Geant4 Physics
  * Reference (release 10.6), covering electron and positron energies from
  * 1 keV to 10 GeV.
@@ -51,7 +51,16 @@ class SeltzerBergerInteractor
     inline CELER_FUNCTION Interaction operator()(Engine& rng);
 
   private:
-    // Gamma energy divided by electron mass * csquared
+    // Sample brems-gamma energy. The analogous G4 sampling routine uses a
+    // Ranlux engine for random number generation; here we use the canonical
+    // generation.
+    template<class Engine>
+    inline CELER_FUNCTION real_type
+    sample_energy_transfer(real_type kinetic_energy_min,
+                           real_type kinetic_energy_max,
+                           Engine&   rng);
+
+    // Device data for the model
     const SeltzerBergerPointers& shared_;
 
     // Incident electron (or positron) energy
@@ -66,8 +75,9 @@ class SeltzerBergerInteractor
     // Element properties for calculating screening functions and variables
     const ElementView& element_;
 
-    // Cached minimum epsilon, m_e*c^2/E_gamma; kinematical limit for Y -> e+e-
-    real_type epsilon0_;
+    // SBParamsData sb_tables;
+    // class SBSampler (const SBParamsData& tables, const ElementView & el,
+    //                  real_type inc_energy, particleID?)
 };
 
 //---------------------------------------------------------------------------//
