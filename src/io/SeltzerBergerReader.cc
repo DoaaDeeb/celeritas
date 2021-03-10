@@ -27,7 +27,7 @@ SeltzerBergerReader::SeltzerBergerReader()
  * Construct using a user defined path to the folder containing the data.
  * The path should point to the files that are usually stored in
  *
- * [Geant4-install]/share/Geant4-10.7.0/data/G4EMLOW7.12/brem_SB/SBTables
+ * [Geant4-install]/share/Geant4-10.7.0/data/G4EMLOW7.12/brem_SB/.
  */
 SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
     : path_to_file_(folder_path)
@@ -37,7 +37,7 @@ SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
 
 //---------------------------------------------------------------------------//
 /*!
- * Read data and return
+ * Fetch data for a given atomic number.
  */
 SeltzerBergerReader::result_type
 SeltzerBergerReader::operator()(unsigned int atomic_number)
@@ -73,7 +73,9 @@ SeltzerBergerReader::retrieve(std::ifstream& input_stream)
     result_type vector;
 
     // Fetch binning information
-    int g4_physics_vector_type, x_size, y_size;
+    unsigned int g4_physics_vector_type; // Not used
+    unsigned int x_size;
+    unsigned int y_size;
 
     input_stream >> g4_physics_vector_type >> x_size >> y_size;
 
