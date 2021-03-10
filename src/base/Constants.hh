@@ -23,18 +23,20 @@ namespace constants
  * System of Units, 9th ed., for definition of constants and how they relate to
  * the different units.
  *
- * Celeritas            | CLHEP                 | Notes
- * -------------------- | --------------------- | ------------
- * a0_bohr              | Bohr_radius           | Bohr radius
- * alpha_fine_structure | fine_structure_const  | |
- * atomic_mass          | amu                   | Not the same as 1/avogadro
- * eps_electric         | epsilon0              | Vacuum permittivity
- * h_planck             | h_Planck              | |
- * k_boltzmann          | k_Boltzmann           | |
- * mu_magnetic          | mu0                   | Vacuum permeability
- * na_avogadro          | Avogadro              | [1/mol]
- * re_electron          | classic_electr_radius | Classical electron radius
- * kcd_luminous         | [none]                | Lumens per Watt
+ * Celeritas                | CLHEP                     | Notes
+ * -------------------------| --------------------------| ------------
+ * a0_bohr                  | Bohr_radius               | Bohr radius
+ * alpha_fine_structure     | fine_structure_const      | |
+ * atomic_mass              | amu                       | Not the same as
+ * 1/avogadro eps_electric  | epsilon0                  | Vacuum
+ * permittivity h_planck    | h_Planck                  | |
+ * k_boltzmann              | k_Boltzmann               | |
+ * mu_magnetic              | mu0                       | Vacuum permeability
+ * na_avogadro              | Avogadro                  | [1/mol]
+ * re_electron              | classic_electr_radius     | [meters]
+ * kcd_luminous             | [none]                    | Lumens per Watt
+ * compton_electron         | electron_Compton_length   | [meters]
+ * migdal                   | [none]                    | [meters^3]
  *
  * Some experimental physical constants are derived from the other physical
  * constants, but for consistency and clarity they are presented numerically
@@ -61,11 +63,6 @@ constexpr real_type kcd_luminous = 683;
 //!@}
 
 //!@{
-//! Exact derivative constant
-constexpr real_type hbar_planck = h_planck / (2 * pi);
-//!@}
-
-//!@{
 //! Experimental physical constant from CODATA 2018
 constexpr real_type a0_bohr              = 5.29177210903e-11 * units::meter;
 constexpr real_type alpha_fine_structure = 7.2973525693e-3;
@@ -75,9 +72,17 @@ constexpr real_type eps_electric         = 8.8541878128e-12 * units::farad
                                    / units::meter;
 constexpr real_type mu_magnetic = 1.25663706212e-6 * units::newton
                                   / (units::ampere * units::ampere);
-constexpr real_type re_electron  = 2.8179403262e-15 * units::meter;
-constexpr real_type rinf_rydberg = 10973731.568160 / units::meter;
-constexpr real_type eh_hartree   = 4.3597447222071e-18 / units::meter;
+constexpr real_type re_electron      = 2.8179403262e-15 * units::meter;
+constexpr real_type rinf_rydberg     = 10973731.568160 / units::meter;
+constexpr real_type eh_hartree       = 4.3597447222071e-18 / units::meter;
+constexpr real_type compton_electron = 2.42631023867e-12 * units::meter;
+//!@}
+
+//!@{
+//! Exact derivative constant
+constexpr real_type hbar_planck = h_planck / (2 * pi);
+constexpr real_type migdal      = 4.0 * pi * re_electron * compton_electron
+                             * compton_electron;
 //!@}
 
 //---------------------------------------------------------------------------//
