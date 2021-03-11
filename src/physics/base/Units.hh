@@ -67,9 +67,16 @@ struct Amu
 struct Barn
 {
     //! Conversion factor from the unit to CGS
+    static CELER_CONSTEXPR_FUNCTION real_type value() { return units::barn; }
+};
+
+//! Unit for cross sections
+struct Millibarn
+{
+    //! Conversion factor from the unit to CGS
     static CELER_CONSTEXPR_FUNCTION real_type value()
     {
-        return 1e-24 * units::centimeter * units::centimeter;
+        return 1e-3 * units::barn;
     }
 };
 

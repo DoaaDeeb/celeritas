@@ -30,9 +30,9 @@ class SeltzerBergerReader
   public:
     struct result_type
     {
-        std::vector<real_type>              x;
-        std::vector<real_type>              y;
-        std::vector<std::vector<real_type>> value;
+        std::vector<real_type> x; //!< Log energy of incident particle [MeV]
+        std::vector<real_type> y; //!< Emitted gamma energy / incident energy
+        std::vector<real_type> value; //!< Scaled DCS [mb]
     };
 
   public:

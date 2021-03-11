@@ -85,34 +85,32 @@ SeltzerBergerReader::retrieve(std::ifstream& input_stream)
     // Resize result_type
     vector.x.resize(x_size);
     vector.y.resize(y_size);
-    vector.value.resize(x_size);
-    for (auto iter = vector.value.begin(); iter != vector.value.end(); iter++)
-    {
-        iter->resize(y_size);
-    }
+    vector.value.resize(x_size * y_size);
 
     // Fetch content
     for (auto i : range(x_size))
     {
+        CELER_ASSERT(input_stream);
         input_stream >> vector.x[i];
     }
 
     for (auto i : range(y_size))
     {
+        CELER_ASSERT(input_stream);
         input_stream >> vector.y[i];
     }
 
-    for (int j : range(y_size))
+    for (auto i : range(x_size))
     {
-        for (int i : range(x_size))
+        for (auto j : range(y_size))
         {
-            input_stream >> vector.value[i][j];
+            CELER_ASSERT(input_stream);
+            input_stream >> vector.value[i * y_size + j];
         }
     }
 
     CELER_ENSURE(vector.x.size() == x_size && vector.y.size() == y_size
-                 && vector.value.size() == x_size
-                 && vector.value.at(0).size() == y_size);
+                 && vector.value.size() == x_size * y_size);
     return vector;
 }
 
