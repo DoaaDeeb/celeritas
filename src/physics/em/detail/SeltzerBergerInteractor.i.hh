@@ -35,10 +35,8 @@ SeltzerBergerInteractor::SeltzerBergerInteractor(
     , allocate_(allocate)
     , element_(element)
 {
-    CELER_EXPECT(particle.particle_id() == shared_.electron_id);
-
-    static_assert(sizeof(real_type) == sizeof(double),
-                  "Embedded constants are hardcoded to double precision.");
+    CELER_EXPECT(particle.particle_id() == shared_.ids.electron
+                 || particle.particle_id() == shared_.ids.positron);
 }
 
 //---------------------------------------------------------------------------//
@@ -50,6 +48,12 @@ SeltzerBergerInteractor::SeltzerBergerInteractor(
 template<class Engine>
 CELER_FUNCTION Interaction SeltzerBergerInteractor::operator()(Engine& rng)
 {
+    // TODO: added these to avoid warnings-as-error failure
+    (void)sizeof(rng);
+    (void)sizeof(inc_direction_);
+    (void)sizeof(element_);
+    (void)sizeof(epsilon0_);
+
     // Allocate space for the pair-produced electrons
     Secondary* secondaries = this->allocate_(2);
     if (secondaries == nullptr)
