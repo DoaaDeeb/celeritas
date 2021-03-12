@@ -38,6 +38,13 @@ namespace detail
 class SeltzerBergerInteractor
 {
   public:
+    //!@{
+    //! Type aliases
+    using SeltzerBergerPointers
+        = SeltzerBergerData<Ownership::const_reference, MemSpace::native>;
+    //!@}
+
+  public:
     //! Construct sampler from shared and state data
     inline CELER_FUNCTION
     SeltzerBergerInteractor(const SeltzerBergerPointers& shared,

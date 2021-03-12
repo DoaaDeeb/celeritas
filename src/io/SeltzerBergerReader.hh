@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "base/Types.hh"
+#include "ImportSBTable.hh"
 
 namespace celeritas
 {
@@ -26,21 +27,20 @@ namespace celeritas
 class SeltzerBergerReader
 {
   public:
-    struct result_type
-    {
-        std::vector<real_type> x; //!< Log energy of incident particle [MeV]
-        std::vector<real_type> y; //!< Ratio of gamma energy to incident energy
-        std::vector<real_type> value; //!< Scaled DCS [mb]
-    };
+    //!@{
+    //! Type aliases
+    using AtomicNumber = int;
+    using result_type  = ImportSBTable;
+    //!@}
 
   public:
-    //! Construct using $G4LEDATA
+    // Construct using $G4LEDATA
     SeltzerBergerReader();
-    //! Construct from a user defined path
+    // Construct from a user defined path
     explicit SeltzerBergerReader(std::string folder_path);
 
     //! Read data from ascii and return result_type data
-    result_type operator()(unsigned int atomic_number) const;
+    result_type operator()(AtomicNumber atomic_number) const;
 
   private:
     std::string path_to_file_;

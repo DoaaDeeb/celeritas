@@ -70,7 +70,6 @@ list(APPEND SOURCES
   physics/em/KleinNishinaModel.cc
   physics/em/MollerBhabhaModel.cc
   physics/em/SeltzerBergerModel.cc
-  physics/em/SeltzerBergerParams.cc
   physics/em/detail/Utils.cc
   physics/grid/ValueGridBuilder.cc
   physics/grid/ValueGridInserter.cc

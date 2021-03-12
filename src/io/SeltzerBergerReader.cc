@@ -47,17 +47,18 @@ SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
 //---------------------------------------------------------------------------//
 /*!
  * Fetch data for a given atomic number.
+ *
+ * Standard data files encompass Z = [1, 100].
  */
 SeltzerBergerReader::result_type
-SeltzerBergerReader::operator()(unsigned int atomic_number) const
+SeltzerBergerReader::operator()(AtomicNumber atomic_number) const
 {
-    // Standard data files encompass Z = [1, 100]
-    CELER_EXPECT(atomic_number > 0 && atomic_number < 101);
+    CELER_EXPECT(atomic_number > 0);
 
     // For Z = 93-99, the incident log energy grid and reduced photon energy
     // grid in the bremsstrahlung data files are incorrect. These are the grids
     // that should be used for those elements (and for all Z < 100).
-    constexpr real_type log_energy[]
+    constexpr double log_energy[]
         = {-6.9078,  -6.5023,  -6.2146,  -5.8091, -5.5215, -5.2983, -5.116,
            -4.8283,  -4.6052,  -4.1997,  -3.912,  -3.5066, -3.2189, -2.9957,
            -2.8134,  -2.5257,  -2.3026,  -1.8971, -1.6094, -1.204,  -0.91629,
@@ -67,7 +68,7 @@ SeltzerBergerReader::operator()(unsigned int atomic_number) const
            5.2983,   5.7038,   5.9915,   6.2146,  6.3969,  6.6846,  6.9078,
            7.3132,   7.6009,   8.0064,   8.294,   8.5172,  8.6995,  8.9872,
            9.2103};
-    constexpr real_type kappa[]
+    constexpr double kappa[]
         = {1e-12, 0.025, 0.05,  0.075,  0.1,    0.15,    0.2,     0.25,
            0.3,   0.35,  0.4,   0.45,   0.5,    0.55,    0.6,     0.65,
            0.7,   0.75,  0.8,   0.85,   0.9,    0.925,   0.95,    0.97,
@@ -106,9 +107,9 @@ SeltzerBergerReader::operator()(unsigned int atomic_number) const
     // Correct the energy grids for Z = 93-99
     if (atomic_number > 92 && atomic_number < 100)
     {
-        result.x = std::vector<real_type>(std::begin(log_energy),
-                                          std::end(log_energy));
-        result.y = std::vector<real_type>(std::begin(kappa), std::end(kappa));
+        result.x = std::vector<double>(std::begin(log_energy),
+                                       std::end(log_energy));
+        result.y = std::vector<double>(std::begin(kappa), std::end(kappa));
     }
 
     // Read scaled differential cross sections, storing in column-major order
@@ -121,8 +122,6 @@ SeltzerBergerReader::operator()(unsigned int atomic_number) const
             input_stream >> result.value[j * result.x.size() + i];
         }
     }
-
-    input_stream.close();
 
     CELER_ENSURE(!result.x.empty() && !result.y.empty());
     return result;

@@ -5,28 +5,20 @@
 //---------------------------------------------------------------------------//
 //! \file SeltzerBerger.test.cc
 //---------------------------------------------------------------------------//
-#include "physics/em/detail/SeltzerBergerInteractor.hh"
-
-#include "physics/material/ElementView.hh"
-#include "physics/material/Types.hh"
-#include "physics/base/Units.hh"
-#include "physics/grid/TwodGridCalculator.hh"
 #include "physics/em/SeltzerBergerModel.hh"
-#include "physics/em/GammaConversionProcess.hh"
-#include "physics/material/MaterialTrackView.hh"
+#include "physics/em/detail/SeltzerBergerInteractor.hh"
 
 #include "celeritas_test.hh"
 #include "gtest/Main.hh"
 #include "base/ArrayUtils.hh"
 #include "base/Range.hh"
+#include "io/SeltzerBergerReader.hh"
 #include "physics/base/Units.hh"
-#include "physics/em/SeltzerBergerParams.hh"
 #include "../InteractorHostTestBase.hh"
 #include "../InteractionIO.hh"
 
 using celeritas::ElementId;
-using celeritas::GammaConversionProcess;
-using celeritas::SeltzerBergerParams;
+using celeritas::SeltzerBergerModel;
 using celeritas::SeltzerBergerReader;
 using celeritas::detail::SeltzerBergerInteractor;
 using celeritas::units::AmuMass;
@@ -37,18 +29,11 @@ namespace pdg       = celeritas::pdg;
 // TEST HARNESS
 //---------------------------------------------------------------------------//
 
-class SeltzerBergerInteractorTest
-    : public celeritas_test::InteractorHostTestBase
+class SeltzerBergerTest : public celeritas_test::InteractorHostTestBase
 {
     using Base = celeritas_test::InteractorHostTestBase;
 
   protected:
-    void set_sb_params(SeltzerBergerParams::Input inp)
-    {
-        CELER_EXPECT(!inp.empty());
-        sb_params_ = std::make_shared<SeltzerBergerParams>(std::move(inp));
-    }
-
     void SetUp() override
     {
         using celeritas::MatterState;
@@ -88,9 +73,11 @@ class SeltzerBergerInteractorTest
         // Set up Seltzer-Berger cross section data
         std::string         data_path = this->test_data_path("physics/em", "");
         SeltzerBergerReader read_element_data(data_path);
-        std::vector<SeltzerBergerReader::result_type> sb_inp;
-        sb_inp.push_back(read_element_data(29));
-        this->set_sb_params(sb_inp);
+
+        model_ = std::make_shared<SeltzerBergerModel>(ModelId{0},
+                                                      this->particle_params(),
+                                                      this->material_params(),
+                                                      read_element_data);
     }
 
     void sanity_check(const Interaction& interaction) const
@@ -99,16 +86,15 @@ class SeltzerBergerInteractorTest
     }
 
   protected:
-    celeritas::detail::SeltzerBergerPointers pointers_;
-    std::shared_ptr<SeltzerBergerParams>     sb_params_;
+    std::shared_ptr<SeltzerBergerModel> model_;
 };
 
 //---------------------------------------------------------------------------//
 // TESTS
 //---------------------------------------------------------------------------//
 
-TEST_F(SeltzerBergerInteractorTest, basic) {}
+TEST_F(SeltzerBergerTest, basic) {}
 
-TEST_F(SeltzerBergerInteractorTest, stress_test) {}
+TEST_F(SeltzerBergerTest, stress_test) {}
 
-TEST_F(SeltzerBergerInteractorTest, model) {}
+TEST_F(SeltzerBergerTest, model) {}
