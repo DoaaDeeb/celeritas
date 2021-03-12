@@ -9,11 +9,11 @@
 
 #include "base/Assert.hh"
 #include "base/KernelParamCalculator.cuda.hh"
+#include "base/StackAllocator.hh"
 #include "random/cuda/RngEngine.hh"
 #include "physics/base/ModelInterface.hh"
 #include "physics/base/ParticleTrackView.hh"
 #include "physics/base/PhysicsTrackView.hh"
-#include "physics/base/SecondaryAllocatorView.hh"
 #include "physics/material/MaterialTrackView.hh"
 #include "SeltzerBergerInteractor.hh"
 
@@ -37,7 +37,7 @@ seltzer_berger_interact_kernel(const SeltzerBergerDeviceRef sb,
     if (tid.get() >= model.states.size())
         return;
 
-    SecondaryAllocatorView allocate_secondaries(model.secondaries);
+    StackAllocator<Secondary> allocate_secondaries(model.secondaries);
     ParticleTrackView      particle(
         model.params.particle, model.states.particle, tid);
 
@@ -55,7 +55,7 @@ seltzer_berger_interact_kernel(const SeltzerBergerDeviceRef sb,
                              tid);
 
     // This interaction only applies if the Seltzer-Berger model was selected
-    if (physics.model_id() != sb.model_id)
+    if (physics.model_id() != sb.ids.model)
         return;
 
     // Assume only a single element in the material, for now

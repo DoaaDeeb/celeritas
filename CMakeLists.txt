@@ -100,10 +100,11 @@ if(CELERITAS_USE_Geant4)
   celeritas_find_package_config(Geant4 REQUIRED)
 endif()
 
-# NB: To check: Geant4 can provide its own zlib (G4zlib)
-# This *may* conflict in applications if both Geant4 libs
-# and Zlib are linked together.
-find_package(ZLIB REQUIRED)
+if(NOT TARGET ZLIB::ZLIB)
+  # Only import zlib if Geant4 hadn't previously imported, to avoid repeat
+  # messages from FPHSA
+  find_package(ZLIB)
+endif()
 
 if(CELERITAS_USE_HepMC3)
   celeritas_find_package_config(HepMC3 REQUIRED)
