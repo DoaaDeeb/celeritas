@@ -7,6 +7,8 @@
 //---------------------------------------------------------------------------//
 #include "SeltzerBergerParams.hh"
 
+#include "base/CollectionBuilder.hh"
+
 namespace celeritas
 {
 //---------------------------------------------------------------------------//
@@ -28,8 +30,10 @@ SeltzerBergerParams::SeltzerBergerParams(const Input& inp)
         CELER_ASSERT(!el_grid.value.empty()
                      && el_grid.value.size()
                             == el_grid.x.size() * el_grid.y.size());
-        TwoGridData grid;
+        TwodGridData grid;
 
+        // TODO: we could probably use a single x and y grid for all elements.
+        // Only Z = 100 has different energy grids.
         // Incident charged particle log energy grid
         grid.x = reals.insert_back(el_grid.x.begin(), el_grid.x.end());
 

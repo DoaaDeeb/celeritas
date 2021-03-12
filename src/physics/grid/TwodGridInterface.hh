@@ -13,14 +13,14 @@ namespace celeritas
 /*!
  * Definition of a structured nonuniform 2D grid with node-centered data.
  *
- * This relies on an external Collection of reals. Data is indexed as `[x][y]`,
- * C-style row-major.
+ * This relies on an external Collection of reals. Data is indexed as `[y][x]`,
+ * Fortran-style column-major.
  */
 struct TwodGridData
 {
     ItemRange<real_type> x;      //!< x grid definition
     ItemRange<real_type> y;      //!< y grid definition
-    ItemRange<real_type> values; //!< [x][y]
+    ItemRange<real_type> values; //!< [y][x]
 
     //! True if assigned and valid
     explicit CELER_FUNCTION operator bool() const
@@ -35,7 +35,7 @@ struct TwodGridData
         CELER_EXPECT(ix < this->x.size());
         CELER_EXPECT(iy < this->y.size());
         return ItemId<real_type>{this->values.front().get()
-                                 + ix * this->y.size() + iy};
+                                 + iy * this->x.size() + ix};
     }
 };
 

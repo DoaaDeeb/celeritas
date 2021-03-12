@@ -27,7 +27,7 @@ SeltzerBergerInteractor::SeltzerBergerInteractor(
     const SeltzerBergerPointers& shared,
     const ParticleTrackView&     particle,
     const Real3&                 inc_direction,
-    SecondaryAllocatorView&      allocate,
+    StackAllocator<Secondary>&   allocate,
     const ElementView&           element)
     : shared_(shared)
     , inc_energy_(particle.energy().value())

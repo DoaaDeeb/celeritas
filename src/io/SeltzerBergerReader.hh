@@ -7,11 +7,9 @@
 //---------------------------------------------------------------------------//
 #pragma once
 
-#include "base/Types.hh"
-
-#include <fstream>
 #include <string>
 #include <vector>
+#include "base/Types.hh"
 
 namespace celeritas
 {
@@ -31,7 +29,7 @@ class SeltzerBergerReader
     struct result_type
     {
         std::vector<real_type> x; //!< Log energy of incident particle [MeV]
-        std::vector<real_type> y; //!< Emitted gamma energy / incident energy
+        std::vector<real_type> y; //!< Ratio of gamma energy to incident energy
         std::vector<real_type> value; //!< Scaled DCS [mb]
     };
 
@@ -39,16 +37,13 @@ class SeltzerBergerReader
     //! Construct using $G4LEDATA
     SeltzerBergerReader();
     //! Construct from a user defined path
-    SeltzerBergerReader(std::string folder_path);
-    
+    explicit SeltzerBergerReader(std::string folder_path);
+
     //! Read data from ascii and return result_type data
-    result_type operator()(unsigned int atomic_number);
+    result_type operator()(unsigned int atomic_number) const;
 
   private:
     std::string path_to_file_;
-
-    // Retrieve data from ascii file
-    result_type retrieve(std::ifstream& input_stream);
 };
 
 //---------------------------------------------------------------------------//

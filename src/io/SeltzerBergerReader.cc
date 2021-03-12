@@ -5,9 +5,12 @@
 //---------------------------------------------------------------------------//
 //! \file SeltzerBergerReader.cc
 //---------------------------------------------------------------------------//
-#include "io/SeltzerBergerReader.hh"
-#include "base/Range.hh"
+#include "SeltzerBergerReader.hh"
+
+#include <fstream>
+#include <sstream>
 #include "base/Assert.hh"
+#include "base/Range.hh"
 
 namespace celeritas
 {
@@ -17,9 +20,11 @@ namespace celeritas
  */
 SeltzerBergerReader::SeltzerBergerReader()
 {
-    CELER_VALIDATE(std::getenv("G4LEDATA"),
-                   "Environment variable G4LEDATA is not defined.");
-    path_to_file_ = std::getenv("G4LEDATA");
+    const char* env_var = std::getenv("G4LEDATA");
+    CELER_VALIDATE(env_var, "Environment variable G4LEDATA is not defined.");
+    std::ostringstream os;
+    os << env_var << "/brem_SB";
+    path_to_file_ = os.str();
 }
 
 //---------------------------------------------------------------------------//
@@ -32,7 +37,11 @@ SeltzerBergerReader::SeltzerBergerReader()
 SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
     : path_to_file_(folder_path)
 {
-    CELER_ENSURE(path_to_file_.size());
+    CELER_EXPECT(path_to_file_.size());
+    if (path_to_file_.back() == '/')
+    {
+        path_to_file_.pop_back();
+    }
 }
 
 //---------------------------------------------------------------------------//
@@ -40,78 +49,83 @@ SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
  * Fetch data for a given atomic number.
  */
 SeltzerBergerReader::result_type
-SeltzerBergerReader::operator()(unsigned int atomic_number)
+SeltzerBergerReader::operator()(unsigned int atomic_number) const
 {
-    // Standard data files encompass Z = [1, 99]
-    CELER_EXPECT(atomic_number > 0 && atomic_number < 100);
+    // Standard data files encompass Z = [1, 100]
+    CELER_EXPECT(atomic_number > 0 && atomic_number < 101);
+
+    // For Z = 93-99, the incident log energy grid and reduced photon energy
+    // grid in the bremsstrahlung data files are incorrect. These are the grids
+    // that should be used for those elements (and for all Z < 100).
+    constexpr real_type log_energy[]
+        = {-6.9078,  -6.5023,  -6.2146,  -5.8091, -5.5215, -5.2983, -5.116,
+           -4.8283,  -4.6052,  -4.1997,  -3.912,  -3.5066, -3.2189, -2.9957,
+           -2.8134,  -2.5257,  -2.3026,  -1.8971, -1.6094, -1.204,  -0.91629,
+           -0.69315, -0.51083, -0.22314, 0,       0.40547, 0.69315, 1.0986,
+           1.3863,   1.6094,   1.7918,   2.0794,  2.3026,  2.7081,  2.9957,
+           3.4012,   3.6889,   3.912,    4.0943,  4.382,   4.6052,  5.0106,
+           5.2983,   5.7038,   5.9915,   6.2146,  6.3969,  6.6846,  6.9078,
+           7.3132,   7.6009,   8.0064,   8.294,   8.5172,  8.6995,  8.9872,
+           9.2103};
+    constexpr real_type kappa[]
+        = {1e-12, 0.025, 0.05,  0.075,  0.1,    0.15,    0.2,     0.25,
+           0.3,   0.35,  0.4,   0.45,   0.5,    0.55,    0.6,     0.65,
+           0.7,   0.75,  0.8,   0.85,   0.9,    0.925,   0.95,    0.97,
+           0.99,  0.995, 0.999, 0.9995, 0.9999, 0.99995, 0.99999, 1.};
+
+    result_type result;
 
     // Open file for given atomic number
-    std::string file = path_to_file_ + "/brem_SB/br"
-                       + std::to_string(atomic_number);
+    std::string   file = path_to_file_ + "/br" + std::to_string(atomic_number);
     std::ifstream input_stream(file.c_str());
     CELER_VALIDATE(input_stream, "Could not open file " << file << ".");
 
-    result_type data_vector = this->retrieve(input_stream);
-    input_stream.close();
-
-    CELER_ENSURE(data_vector.x.size() && data_vector.y.size());
-    return data_vector;
-}
-
-//---------------------------------------------------------------------------//
-// PRIVATE
-//---------------------------------------------------------------------------//
-
-//---------------------------------------------------------------------------//
-/*!
- * Parse selected input data and store it into a result_type structure.
- * This method does *NOT* closes the input stream.
- */
-SeltzerBergerReader::result_type
-SeltzerBergerReader::retrieve(std::ifstream& input_stream)
-{
-    result_type vector;
-
     // Fetch binning information
     unsigned int g4_physics_vector_type; // Not used
-    unsigned int x_size;
-    unsigned int y_size;
+    unsigned int x_size = 0;
+    unsigned int y_size = 0;
 
-    input_stream >> g4_physics_vector_type >> x_size >> y_size;
+    input_stream >> g4_physics_vector_type >> y_size >> x_size;
+    result.x.resize(x_size);
+    result.y.resize(y_size);
 
-    CELER_VALIDATE(input_stream, "Could not read file.");
-    CELER_VALIDATE(x_size >= 2 && y_size >= 2, "Number of bins is too small.");
-
-    // Resize result_type
-    vector.x.resize(x_size);
-    vector.y.resize(y_size);
-    vector.value.resize(x_size * y_size);
-
-    // Fetch content
-    for (auto i : range(x_size))
-    {
-        CELER_ASSERT(input_stream);
-        input_stream >> vector.x[i];
-    }
-
+    // Read reduced photon energy grid
     for (auto i : range(y_size))
     {
         CELER_ASSERT(input_stream);
-        input_stream >> vector.y[i];
+        input_stream >> result.y[i];
     }
 
+    // Read incident particle log energy grid
     for (auto i : range(x_size))
     {
-        for (auto j : range(y_size))
+        CELER_ASSERT(input_stream);
+        input_stream >> result.x[i];
+    }
+
+    // Correct the energy grids for Z = 93-99
+    if (atomic_number > 92 && atomic_number < 100)
+    {
+        result.x = std::vector<real_type>(std::begin(log_energy),
+                                          std::end(log_energy));
+        result.y = std::vector<real_type>(std::begin(kappa), std::end(kappa));
+    }
+
+    // Read scaled differential cross sections, storing in column-major order
+    result.value.resize(result.x.size() * result.y.size());
+    for (auto i : range(result.x.size()))
+    {
+        for (auto j : range(result.y.size()))
         {
             CELER_ASSERT(input_stream);
-            input_stream >> vector.value[i * y_size + j];
+            input_stream >> result.value[j * result.x.size() + i];
         }
     }
 
-    CELER_ENSURE(vector.x.size() == x_size && vector.y.size() == y_size
-                 && vector.value.size() == x_size * y_size);
-    return vector;
+    input_stream.close();
+
+    CELER_ENSURE(!result.x.empty() && !result.y.empty());
+    return result;
 }
 
 //---------------------------------------------------------------------------//

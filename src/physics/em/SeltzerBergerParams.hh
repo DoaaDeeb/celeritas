@@ -70,5 +70,3 @@ class SeltzerBergerParams
 
 //---------------------------------------------------------------------------//
 } // namespace celeritas
-
-#include "SeltzerBergerParams.i.hh"

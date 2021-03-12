@@ -53,8 +53,8 @@ class TwodGridCalculator
 
     enum
     {
-        X = 0,
-        Y = 1
+        Y = 0,
+        X = 1
     };
 };
 

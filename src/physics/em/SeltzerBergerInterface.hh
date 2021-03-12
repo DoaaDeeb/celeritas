@@ -26,8 +26,8 @@ struct SeltzerBergerParamsData
     using Data = Collection<T, W, M>;
 
     // Backend storage
-    Data<real_type>   reals;
-    Data<TwoGridData> value_grids; //!< One grid per element
+    Data<real_type>    reals;
+    Data<TwodGridData> value_grids; //!< One grid per element
 
     //// MEMBER FUNCTIONS ////
 
@@ -51,5 +51,3 @@ struct SeltzerBergerParamsData
 
 //---------------------------------------------------------------------------//
 } // namespace celeritas
-
-#include "SeltzerBergerInterface.i.hh"
