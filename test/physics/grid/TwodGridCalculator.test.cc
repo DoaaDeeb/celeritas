@@ -6,15 +6,46 @@
 //! \file TwodGridCalculator.test.cc
 //---------------------------------------------------------------------------//
 #include "physics/grid/TwodGridCalculator.hh"
+#include "physics/grid/detail/FindInterp.hh"
 
 #include "base/Collection.hh"
 #include "base/CollectionBuilder.hh"
+#include "physics/grid/UniformGrid.hh"
 #include "celeritas_test.hh"
 
 using celeritas::Ownership;
 using celeritas::range;
 using celeritas::real_type;
 using celeritas::TwodGridCalculator;
+
+TEST(Detail, FindInterp)
+{
+    using namespace celeritas;
+
+    auto              data = UniformGridData::from_bounds(1.0, 5.0, 3);
+    const UniformGrid grid(data);
+
+    {
+        auto interp = detail::find_interp(grid, 1.0);
+        EXPECT_EQ(0, interp.index);
+        EXPECT_SOFT_EQ(0.0, interp.fraction);
+    }
+    {
+        auto interp = detail::find_interp(grid, 3.0);
+        EXPECT_EQ(1, interp.index);
+        EXPECT_SOFT_EQ(0.0, interp.fraction);
+    }
+    {
+        auto interp = detail::find_interp(grid, 4.0);
+        EXPECT_EQ(1, interp.index);
+        EXPECT_SOFT_EQ(0.5, interp.fraction);
+    }
+#if CELERITAS_DEBUG
+    EXPECT_THROW(detail::find_interp(grid, 0.999), celeritas::DebugError);
+    EXPECT_THROW(detail::find_interp(grid, 5.0), celeritas::DebugError);
+    EXPECT_THROW(detail::find_interp(grid, 5.001), celeritas::DebugError);
+#endif
+}
 
 //---------------------------------------------------------------------------//
 // TEST HARNESS
@@ -71,7 +102,7 @@ class TwodGridCalculatorTest : public celeritas::Test
 // TESTS
 //---------------------------------------------------------------------------//
 
-TEST_F(TwodGridCalculatorTest, all)
+TEST_F(TwodGridCalculatorTest, whole_grid)
 {
     TwodGridCalculator interpolate(grid_data_, ref_);
 
@@ -91,5 +122,14 @@ TEST_F(TwodGridCalculatorTest, all)
         {
             EXPECT_SOFT_EQ(calc_expected(x, y), interpolate({x, y}));
         }
+    }
+}
+
+TEST_F(TwodGridCalculatorTest, subgrid)
+{
+    auto interpolate = TwodGridCalculator(grid_data_, ref_)(0.5);
+    for (real_type y : {0.0, 0.4, 1.6, 3.25})
+    {
+        EXPECT_SOFT_EQ(calc_expected(0.5, y), interpolate(y));
     }
 }
