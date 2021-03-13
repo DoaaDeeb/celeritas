@@ -43,7 +43,7 @@ class TwodGridCalculatorTest : public celeritas::Test
         {
             for (auto j : range(ygrid_.size()))
             {
-                values[j * nx + i] = this->calc_expected(xgrid_[i], ygrid_[j]);
+                values[i * ny + j] = this->calc_expected(xgrid_[i], ygrid_[j]);
             }
         }
         grid_data_.values = build.insert_back(values.begin(), values.end());

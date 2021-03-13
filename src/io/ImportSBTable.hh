@@ -19,7 +19,7 @@ struct ImportSBTable
 {
     std::vector<double> x;     //!< Log energy of incident particle / MeV
     std::vector<double> y;     //!< Ratio of gamma energy to incident energy
-    std::vector<double> value; //!< Scaled DCS [mb]
+    std::vector<double> value; //!< Scaled DCS [mb] [ny * x + y]
 };
 
 //---------------------------------------------------------------------------//

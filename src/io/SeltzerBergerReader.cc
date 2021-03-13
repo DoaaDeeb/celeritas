@@ -112,14 +112,14 @@ SeltzerBergerReader::operator()(AtomicNumber atomic_number) const
         result.y = std::vector<double>(std::begin(kappa), std::end(kappa));
     }
 
-    // Read scaled differential cross sections, storing in column-major order
-    result.value.resize(result.x.size() * result.y.size());
-    for (auto i : range(result.x.size()))
+    // Read scaled differential cross sections, storing in row-major order
+    result.value.resize(x_size * y_size);
+    for (auto i : range(x_size))
     {
-        for (auto j : range(result.y.size()))
+        for (auto j : range(y_size))
         {
             CELER_ASSERT(input_stream);
-            input_stream >> result.value[j * result.x.size() + i];
+            input_stream >> result.value[i * y_size + j];
         }
     }
 
