@@ -72,7 +72,7 @@ class SeltzerBergerTest : public celeritas_test::InteractorHostTestBase
 
         // Set up Seltzer-Berger cross section data
         std::string         data_path = this->test_data_path("physics/em", "");
-        SeltzerBergerReader read_element_data(data_path);
+        SeltzerBergerReader read_element_data(data_path.c_str());
 
         model_ = std::make_shared<SeltzerBergerModel>(ModelId{0},
                                                       this->particle_params(),

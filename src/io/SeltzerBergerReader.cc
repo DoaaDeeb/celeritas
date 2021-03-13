@@ -24,23 +24,21 @@ SeltzerBergerReader::SeltzerBergerReader()
     CELER_VALIDATE(env_var, "Environment variable G4LEDATA is not defined.");
     std::ostringstream os;
     os << env_var << "/brem_SB";
-    path_to_file_ = os.str();
+    path_ = os.str();
 }
 
 //---------------------------------------------------------------------------//
 /*!
  * Construct using a user defined path to the folder containing the data.
  * The path should point to the files that are usually stored in
- *
  * [Geant4-install]/share/Geant4-10.7.0/data/G4EMLOW7.12/brem_SB/.
  */
-SeltzerBergerReader::SeltzerBergerReader(std::string folder_path)
-    : path_to_file_(folder_path)
+SeltzerBergerReader::SeltzerBergerReader(const char* path) : path_(path)
 {
-    CELER_EXPECT(path_to_file_.size());
-    if (path_to_file_.back() == '/')
+    CELER_EXPECT(path_.size());
+    if (path_.back() == '/')
     {
-        path_to_file_.pop_back();
+        path_.pop_back();
     }
 }
 
@@ -77,7 +75,7 @@ SeltzerBergerReader::operator()(AtomicNumber atomic_number) const
     result_type result;
 
     // Open file for given atomic number
-    std::string   file = path_to_file_ + "/br" + std::to_string(atomic_number);
+    std::string   file = path_ + "/br" + std::to_string(atomic_number);
     std::ifstream input_stream(file.c_str());
     CELER_VALIDATE(input_stream, "Could not open file " << file << ".");
 
@@ -110,6 +108,8 @@ SeltzerBergerReader::operator()(AtomicNumber atomic_number) const
         result.x = std::vector<double>(std::begin(log_energy),
                                        std::end(log_energy));
         result.y = std::vector<double>(std::begin(kappa), std::end(kappa));
+        x_size   = result.x.size();
+        y_size   = result.y.size();
     }
 
     // Read scaled differential cross sections, storing in row-major order

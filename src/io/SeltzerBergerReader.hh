@@ -36,14 +36,15 @@ class SeltzerBergerReader
   public:
     // Construct using $G4LEDATA
     SeltzerBergerReader();
-    // Construct from a user defined path
-    explicit SeltzerBergerReader(std::string folder_path);
 
-    //! Read data from ascii and return result_type data
+    // Construct from a user defined path
+    explicit SeltzerBergerReader(const char* path);
+
+    // Read data from ascii for the given element
     result_type operator()(AtomicNumber atomic_number) const;
 
   private:
-    std::string path_to_file_;
+    std::string path_;
 };
 
 //---------------------------------------------------------------------------//
