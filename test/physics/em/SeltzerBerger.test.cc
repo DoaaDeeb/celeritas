@@ -93,8 +93,18 @@ class SeltzerBergerTest : public celeritas_test::InteractorHostTestBase
 // TESTS
 //---------------------------------------------------------------------------//
 
-TEST_F(SeltzerBergerTest, basic) {}
+TEST_F(SeltzerBergerTest, sb_tables)
+{
+    const auto& xs = model_->host_pointers().differential_xs;
 
-TEST_F(SeltzerBergerTest, stress_test) {}
+    // The tables should just have the one element (copper). The values of the
+    // arguments have been calculated from the g4emlow@7.13 dataset.
+    ASSERT_EQ(1, xs.elements.size());
 
-TEST_F(SeltzerBergerTest, model) {}
+    auto argmax = xs.sizes[xs.elements[ElementId{0}].argmax];
+    const unsigned int expected_argmax[]
+        = {31, 31, 31, 30, 30, 7, 7, 6, 5, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0,
+           0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    EXPECT_VEC_EQ(argmax, expected_argmax);
+}

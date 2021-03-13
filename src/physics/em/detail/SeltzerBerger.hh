@@ -22,6 +22,33 @@ namespace detail
 {
 //---------------------------------------------------------------------------//
 /*!
+ * Seltzer-Berger differential cross section tables for a single element.
+ *
+ * The 2D grid data is organized by log E on the x axis and fractional exiting
+ * energy (0 to 1) on the y axis. The values are in millibarns, but their
+ * magnitude isn't important since we always take ratios.
+ *
+ * \c argmax is the
+ *
+ * \todo We could use way smaller integers for argmax, even i/j here, because
+ * these tables are so small.
+ */
+struct SBElementTableData
+{
+    using EnergyUnits = units::LogMev;
+    using XsUnits     = units::Millibarn;
+
+    TwodGridData         grid;   //!< Cross section grid and data
+    ItemRange<size_type> argmax; //!< Y index of the largest XS for each energy
+
+    explicit inline CELER_FUNCTION operator bool() const
+    {
+        return grid && argmax.size() == grid.x.size();
+    }
+};
+
+//---------------------------------------------------------------------------//
+/*!
  * Bremsstrahlung differential cross section (DCS) data for SB sampling.
  *
  * The value grids are organized per element ID, and each 2D grid is:
@@ -39,20 +66,18 @@ struct SeltzerBergerTableData
     template<class T>
     using ElementData = Collection<T, W, M, ElementId>;
 
-    using EnergyUnits = units::Mev;
-    using XsUnits     = units::Millibarn;
-
     //// MEMBER DATA ////
 
-    Data<real_type>           reals;
-    ElementData<TwodGridData> grids;
+    Data<real_type>                 reals;
+    Data<size_type>                 sizes;
+    ElementData<SBElementTableData> elements;
 
     //// MEMBER FUNCTIONS ////
 
     //! Whether the data is assigned
     explicit inline CELER_FUNCTION operator bool() const
     {
-        return !grids.empty();
+        return !reals.empty() && !sizes.empty() && !elements.empty();
     }
 
     //! Assign from another set of data
@@ -61,8 +86,9 @@ struct SeltzerBergerTableData
     operator=(const SeltzerBergerTableData<W2, M2>& other)
     {
         CELER_EXPECT(other);
-        reals = other.reals;
-        grids = other.grids;
+        reals    = other.reals;
+        sizes    = other.sizes;
+        elements = other.elements;
         return *this;
     }
 };
