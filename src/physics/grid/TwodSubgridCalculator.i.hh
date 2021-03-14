@@ -22,12 +22,15 @@ TwodSubgridCalculator::TwodSubgridCalculator(const TwodGridData& grids,
     CELER_EXPECT(grids);
     CELER_EXPECT(grids.values.back() < storage.size());
     CELER_EXPECT(x_loc.index + 1 < grids.x.size());
-    CELER_EXPECT(x_loc.fraction >= 0 && x_loc_.fraction < 1);
+    CELER_EXPECT(x_loc.fraction >= 0 && x_loc_.fraction <= 1);
 }
 
 //---------------------------------------------------------------------------//
 /*!
  * Calculate the value at the given y coordinate for preselected x.
+ *
+ * This uses *bilinear* interpolation and and therefore exactly represents
+ * functions that are a linear combination of 1, x, y, and xy.
  */
 CELER_FUNCTION real_type TwodSubgridCalculator::operator()(real_type y) const
 {

@@ -39,6 +39,18 @@ class TwodSubgridCalculator
     // Calculate the value at the given y coordinate
     inline CELER_FUNCTION real_type operator()(real_type y) const;
 
+    //! Index of the preselected lower x value
+    CELER_FORCEINLINE_FUNCTION size_type x_index() const
+    {
+        return x_loc_.index;
+    }
+
+    //! Fraction between the lower and upper x grid values
+    CELER_FORCEINLINE_FUNCTION real_type x_fraction() const
+    {
+        return x_loc_.fraction;
+    }
+
   private:
     const TwodGridData& grids_;
     const Values&       storage_;

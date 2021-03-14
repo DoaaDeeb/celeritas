@@ -28,7 +28,8 @@ namespace detail
  * energy (0 to 1) on the y axis. The values are in millibarns, but their
  * magnitude isn't important since we always take ratios.
  *
- * \c argmax is the
+ * \c argmax is the y index of the largest cross section at a given incident
+ * energy point.
  *
  * \todo We could use way smaller integers for argmax, even i/j here, because
  * these tables are so small.

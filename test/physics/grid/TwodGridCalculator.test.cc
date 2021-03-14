@@ -127,9 +127,12 @@ TEST_F(TwodGridCalculatorTest, whole_grid)
 
 TEST_F(TwodGridCalculatorTest, subgrid)
 {
-    auto interpolate = TwodGridCalculator(grid_data_, ref_)(0.5);
-    for (real_type y : {0.0, 0.4, 1.6, 3.25})
+    for (real_type x : {-1., .5, 2.99})
     {
-        EXPECT_SOFT_EQ(calc_expected(0.5, y), interpolate(y));
+        auto interpolate = TwodGridCalculator(grid_data_, ref_)(x);
+        for (real_type y : {0.0, 0.4, 1.6, 3.25})
+        {
+            EXPECT_SOFT_EQ(calc_expected(x, y), interpolate(y));
+        }
     }
 }
