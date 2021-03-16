@@ -5,6 +5,7 @@
 //---------------------------------------------------------------------------//
 //! \file SeltzerBergerInteractor.i.hh
 //---------------------------------------------------------------------------//
+#include "BremAngularSampler.hh"
 
 #include "base/ArrayUtils.hh"
 #include "base/Constants.hh"
@@ -48,11 +49,6 @@ SeltzerBergerInteractor::SeltzerBergerInteractor(
 template<class Engine>
 CELER_FUNCTION Interaction SeltzerBergerInteractor::operator()(Engine& rng)
 {
-    // TODO: added these to avoid warnings-as-error failure
-    (void)sizeof(rng);
-    (void)sizeof(inc_direction_);
-    (void)sizeof(element_);
-
     // Allocate space for the brem-gamma
     Secondary* brems_gamma = this->allocate_(1);
     if (brems_gamma == nullptr)
@@ -64,41 +60,42 @@ CELER_FUNCTION Interaction SeltzerBergerInteractor::operator()(Engine& rng)
     // Data to be loaded from SBParamsData for SBSampler, based on material
     real_type cut_energy, max_energy;
     // Determine thresholds based on SB data.
-    real_type kinetic_energy_min
-        = celeritas::min(cut_energy, inc_energy_.value());
-    real_type kinetic_energy_max
-        = celeritas::min(max_energy, inc_energy_.value());
+    real_type kinetic_energy_min = celeritas::min(cut_energy, inc_energy_);
+    real_type kinetic_energy_max = celeritas::min(max_energy, inc_energy_);
+    CELER_ASSERT(cut_energy > kinetic_energy_max);
+
+    /// TODO: How to get material density factor?
+    // real_type density_factor       = mat.electron_density() * migdal;
+    Energy primary_total_energy = Energy{
+        inc_energy_ + shared_.electron_mass * ipow<2>(constants::c_light)};
 
     // Brem-gamma energy sampled either by rejection or sampling tables.
     // In G4, a flag is used to select sampling the method.
+    // SBEnergyDistribution(shared_,
+    //                      inc_energy_,
+    //                      element_,
+    //                      density_correction, // EnergySq
+    //                      min_gamma_energy);  // Energy
     real_type gamma_energy = this->sample_energy_transfer(
         kinetic_energy_min, kinetic_energy_max, rng);
 
     // This should never happen under normal conditions but protect anyway
     CELER_ASSERT(gamma_energy > 0.0);
 
-    /*!
-     * Sample brems-gamma angles (direction).
-     *
-     * GetAngularDistribution()->SampleDirection(
-     *      G4DynamicParticle*,
-     *      total_inc_energy - gamma_energy,
-     *      Z,
-     *      material)
-     *
-     * This is used in other brems models, e.g. Penelope. May want to make a
-     * separate class for sampling direction.
-     */
+    BremAngularSampler sample_gamma_direction{
+        shared_.electron_mass, inc_energy_, inc_direction_};
+    Real3 gamma_direction = sample_gamma_direction(rng);
 
     // Construct interaction
     Interaction result;
-    result.action = Action::spawned;
+    result.action      = Action::spawned;
     result.secondaries = {brems_gamma, 1};
 
     // Outgoing secondary is a photon
     brems_gamma[0].particle_id = shared_.ids.gamma;
     /// TODO: sample energy
-    brems_gamma[0].energy = units::MevEnergy{0.0};
+    brems_gamma[0].energy    = units::MevEnergy{0.0};
+    brems_gamma[0].direction = gamma_direction;
 
     // If brems-gamma is highly energetic, G4 stops tracking the
     // incoming/primary particle and creates new secondary e-/e+

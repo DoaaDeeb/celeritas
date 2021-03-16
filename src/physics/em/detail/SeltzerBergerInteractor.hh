@@ -42,6 +42,8 @@ class SeltzerBergerInteractor
     //! Type aliases
     using SeltzerBergerPointers
         = SeltzerBergerData<Ownership::const_reference, MemSpace::native>;
+    using Energy   = units::MevEnergy;
+    using EnergySq = Quantity<UnitProduct<units::Mev, units::Mev>>;
     //!@}
 
   public:
@@ -71,7 +73,7 @@ class SeltzerBergerInteractor
     const SeltzerBergerPointers& shared_;
 
     // Incident electron (or positron) energy
-    const units::MevEnergy inc_energy_;
+    const real_type inc_energy_;
 
     // Incident direction
     const Real3& inc_direction_;
@@ -81,6 +83,9 @@ class SeltzerBergerInteractor
 
     // Element properties for calculating screening functions and variables
     const ElementView& element_;
+
+    const real_type migdal = 4.0 * constants::pi * constants::re_electron
+                             * ipow<2>(constants::lambda_compton);
 
     // SBParamsData sb_tables;
     // class SBSampler (const SBParamsData& tables, const ElementView & el,
